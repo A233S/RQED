@@ -46,38 +46,45 @@ void isTimeAccelerated() {
 }
 
 void ddt() {
-    using namespace std::chrono;
-
-    // 初始变量
     int counter = 1;
+    while (counter < 30000) {
+        using namespace std::chrono;
 
-    // 获取当前时间点
-    auto start_time = high_resolution_clock::now();
+        // 初始变量
+        //int counter = 1;
 
-    // 持续加1直到5秒过去
-    while (true) {
-        // 获取当前时间
-        auto current_time = high_resolution_clock::now();
+        // 获取当前时间点
+        auto start_time = high_resolution_clock::now();
 
-        // 计算过去的时间
-        auto duration = duration_cast<seconds>(current_time - start_time);
+        // 持续加1直到5秒过去
+        while (true) {
+            // 获取当前时间
+            auto current_time = high_resolution_clock::now();
 
-        // 如果5秒已经过去，则退出循环
-        if (duration.count() >= 5) {
-            break;
+            // 计算过去的时间
+            auto duration = duration_cast<seconds>(current_time - start_time);
+
+            // 如果5秒已经过去，则退出循环
+            if (duration.count() >= 5) {
+                break;
+            }
+
+            // 增加变量
+            counter++;
         }
 
-        // 增加变量
-        counter++;
-    }
+        // 输出结果
+        //std::cout << "在5秒内，变量从1增加到：" << counter << std::endl;
+        std::cout << counter << std::endl;
 
-    // 输出结果
-    //std::cout << "在5秒内，变量从1增加到：" << counter << std::endl;
-    std::cout << counter << std::endl;
+        //while (counter < 90000000) {
+        //0.9亿是没有使用vmp的,3万是给使用vmp的
+        //if (counter > 30000) {
+        //    break;
 
-    //while (counter < 90000000) {
-    //0.9亿是没有使用vmp的,3万是给使用vmp的
-    while (counter < 30000) {
+            //Sleep(1);
+        //}
+
         std::cout << "D" << std::endl;
 
         double* pvalue = NULL; // 初始化为 null 的指针
@@ -86,10 +93,8 @@ void ddt() {
         *pvalue = 29494.99;     // 在分配的地址存储值
 
         delete pvalue;         // 释放内存
-
-        //Sleep(1);
     }
-    return ;
+    //return ;
 }
 
 void ip() {
