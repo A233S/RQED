@@ -22,3 +22,7 @@
 3. 加载shellcode 用Releases里下载的`rqed.exe`加载
      
    例如`rqed.exe -file shellcode文件路径 -ps 密码`,`-ps`参数是选填的,不用`-ps`参数就直接`rqed.exe -file shellcode文件路径`
+
+### 各家杀毒软件的检测情况
+![virustotal](https://raw.githubusercontent.com/A233S/RQED/refs/heads/main/QQ20250131-213036.png)  
+![微步](https://github.com/A233S/RQED/raw/refs/heads/main/QQ20250131-213422.png)
