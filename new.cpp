@@ -59,7 +59,7 @@ void ddt() {
         using namespace std::chrono;
 
         // 初始变量
-        //int counter = 1;
+        int counter = 1;
 
         // 获取当前时间点
         auto start_time = high_resolution_clock::now();
