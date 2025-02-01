@@ -54,8 +54,7 @@ void isTimeAccelerated() {
 }
 
 void ddt() {
-    int counter = 1;
-    while (counter < 30000) {
+    while (true) {
         using namespace std::chrono;
 
         // 初始变量
@@ -87,11 +86,9 @@ void ddt() {
 
         //while (counter < 90000000) {
         //0.9亿是没有使用vmp的,3万是给使用vmp的
-        //if (counter > 30000) {
-        //    break;
-
-            //Sleep(1);
-        //}
+        if (counter > 90000000) {
+            break;
+        }
 
         std::cout << "D" << std::endl;
 
