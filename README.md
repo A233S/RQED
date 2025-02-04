@@ -1,7 +1,6 @@
 # RQED
 
-### 说明
-记得用/MD编译,不然会报毒
+### 说明 
 
 使用了chatgpt生成,deepseek生成,RingQ代码,等。
 
