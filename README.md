@@ -2,6 +2,8 @@
 
 ### 说明 
 
+**工具**: [Sign-Sacker-2.0.1-password_langsasec.zip](https://github.com/A233S/RQED/releases/download/1.0/Sign-Sacker-2.0.1-password_langsasec.zip)
+
 # **这个是之前弄的, 现在应该没用了**
 
 使用了chatgpt生成,deepseek生成,RingQ代码,等。
